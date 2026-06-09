@@ -1,0 +1,5 @@
+data/processed/
+outputs/
+wandb/
+__pycache__/
+*.pyc
