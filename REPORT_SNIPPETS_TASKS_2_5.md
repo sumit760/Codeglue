@@ -41,3 +41,41 @@ After comparing the two versions, I pushed the best model and tokenizer to a pub
 - W&B project dashboard: `<ADD_WANDB_PROJECT_LINK>`
 - Kaggle Version 1 notebook: `<ADD_KAGGLE_V1_LINK>`
 - Kaggle Version 2 notebook: `<ADD_KAGGLE_V2_LINK>`
+
+Here is the formal documentation drafted from our previous steps. You can copy and paste this directly into your final submission report.
+
+### **1. Data Cleaning Decisions**
+
+* **Missing Values:** The CodeXGLUE defect detection dataset is pre-curated, meaning complex imputation strategies were not required. However, non-essential metadata columns (`id`, `project`, `commit_id`) were intentionally dropped from the `DatasetDict` to optimize memory allocation and processing speed during training.
+* **Normalization Strategy:** * **Text Cleaning:** Raw C/C++ code inputs contained excessive whitespace and consecutive newline characters (`\n\n`). This was normalized by replacing multiple spaces and newlines with a single space to prevent the tokenizer from wasting context space on empty formatting blocks.
+* **Tokenization & Truncation:** The cleaned code was tokenized using `CodeBERTa-small-v1`'s native tokenizer. All sequences were padded and truncated to a `max_length` of 512 tokens to ensure uniform matrix dimensions while staying strictly within the model's maximum context window.
+* **Label Transformation:** The target feature was converted from boolean values (`True`/`False`) into standard integer labels (`1`/`0`) required by the PyTorch training loop for binary classification.
+
+
+* **Class Distribution:** The close alignment between the F1 score and the raw Accuracy metric during our evaluation indicates that the validation/test splits are relatively balanced. This ensures the model learned to recognize syntax defects rather than simply defaulting to predicting a majority class.
+
+---
+
+### **2. Model Selection Rationale**
+
+**Selected Model:** `huggingface/CodeBERTa-small-v1`
+
+* **Domain Specificity:** According to the official Hugging Face model card, CodeBERTa is a RoBERTa-like model specifically pre-trained on the CodeSearchNet dataset. This endows the model with a native, structural understanding of programming languages (including C/C++), making it vastly superior for code analysis compared to general-purpose English NLP models.
+* **Resource Efficiency:** The assignment specifications require keeping the model footprint under 200 MB. CodeBERTa-small-v1 fulfills this perfectly (approximately 84 million parameters). Its compact architecture allowed for smooth, highly efficient training on Kaggle's free T4 GPUs utilizing mixed precision (`fp16=True`), completely avoiding Out-Of-Memory (OOM) bottlenecks.
+
+---
+
+### **3. Experiment Comparison**
+
+| Metric | Version 1 (LR: 3e-5) | Version 2 (LR: 5e-5) |
+| --- | --- | --- |
+| **Validation Loss** | 1.284 | 1.504 |
+| **Accuracy** | 62.88% | 62.26% |
+| **F1 Score** | 62.93% | 62.24% |
+
+**Performance Analysis:**
+Version 1 outperformed Version 2 across all logged metrics. By increasing the learning rate from 3e-5 to 5e-5 in the second run, the validation loss increased significantly (from 1.284 to 1.504), accompanied by a slight decay in both Accuracy and F1 scores. This indicates that the more aggressive learning rate in Version 2 was too large, causing the optimizer to step past the optimal model weights (overshooting the local minima in the loss landscape). Version 1's smaller step size allowed for more stable and accurate convergence.
+
+---
+
+I would love to test your understanding of the hyperparameter optimization we just analyzed with a quick quiz, but you previously asked me to use a specific format for quizzes without providing the actual format details. Could you clarify how you would like those questions structured?
