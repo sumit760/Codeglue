@@ -1,8 +1,8 @@
 # .github/workflows/ci.yml
 name: CI
 on:
-  push:          { branches: [develop] }
-  pull_request:  { branches: [main] }
+  push:          { branches: [dev] }
+  pull_request:  { branches: [master] }
 jobs:
   lint:
     runs-on: ubuntu-latest
