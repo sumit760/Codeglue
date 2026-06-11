@@ -1,9 +1,0 @@
-# Core Machine Learning & Data Processing
-torch>=2.0.0
-transformers>=4.45.0
-datasets>=2.14.0
-
-# Evaluation & Tracking
-evaluate
-scikit-learn
-wandb
