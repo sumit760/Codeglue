@@ -11,9 +11,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python, install dependencies and run code analysis
+      - name: Setup Python
         uses: actions/setup-python@v5
         with: 
           { python-version: '3.11' }
-      - run: pip install -r requirements.txt flake8
-      - run: flake8 src/ --max-line-length=120
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt flake8
+
+      - name: Execute static code analysis
+        run: flake8 src/ --max-line-length=120
