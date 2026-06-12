@@ -6,6 +6,9 @@ on:
       input_text:
         description: 'Text to classify'
         required: true
+  push:
+    branches:
+      - dev
 jobs:
   infer:
     runs-on: ubuntu-latest
