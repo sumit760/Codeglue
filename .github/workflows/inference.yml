@@ -12,7 +12,7 @@ env:
   # Docker Hub image to pull. Replace with your own:
   #   <your-dockerhub-username>/mlops-a3-inference:latest
   # (Docker Hub is the default registry, so no docker.io/ prefix is required.)
-  IMAGE: your-dockerhub-username/mlops-a3-inference:latest
+  IMAGE: sumitiitj26/mlops-a3-inference:dev-latest
 
 jobs:
   infer:
