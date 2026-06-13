@@ -16,6 +16,7 @@ env:
 
 jobs:
   infer:
+    name: Infer input
     runs-on: ubuntu-latest
     steps:
       # Uncomment ONLY if the image is PRIVATE on Docker Hub.
