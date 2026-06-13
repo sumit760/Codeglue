@@ -1,21 +1,3 @@
-#!/usr/bin/env python3
-"""
-train.py — Fine-tune CodeBERTa-small-v1 on the CodeXGLUE defect-detection
-dataset using two experimental configurations, evaluate on the test split,
-and push the best model to the Hugging Face Hub.
-
-Prerequisites:
-    Run prepare_data.py first to build ./data/processed/ and class_weights.npy.
-
-Experiments:
-    V1 — linear LR schedule, 3 epochs,  lr=2e-5, batch=16
-    V2 — cosine LR + warmup, 5 epochs,  lr=5e-5, batch=32
-
-Optional QLoRA path (CodeBERT-base, INT4):
-    Set USE_QLORA = True at the top of this file.
-    Requires peft, bitsandbytes, and a GPU with >= 8 GB VRAM.
-"""
-
 import json
 import os
 
@@ -54,15 +36,11 @@ USE_QLORA  = False
 MODEL_NAME = LARGE_MODEL if USE_QLORA else PRIMARY_MODEL
 
 
-# ── 1  Auth ───────────────────────────────────────────────────────────────────
-
 load_secrets()
 wandb.login(key=os.environ["WANDB_API_KEY"], relogin=True)
 login(token=os.environ["HF_TOKEN"])
 print("Authenticated with W&B and Hugging Face.")
 
-
-# ── 2  Load prepared data ─────────────────────────────────────────────────────
 
 print("\nLoading prepared data from disk…")
 tokenized     = load_from_disk(os.path.join(DATA_DIR, "processed"))
@@ -72,14 +50,12 @@ class_weights = torch.tensor(
 )
 print(
     f"Splits: { {k: len(v) for k, v in tokenized.items()} }\n"
-    f"Class weights → Clean: {class_weights[0]:.4f}  |  Vulnerable: {class_weights[1]:.4f}"
+    f"Class weights -> Clean: {class_weights[0]:.4f}  |  Vulnerable: {class_weights[1]:.4f}"
 )
 
 tokenizer     = AutoTokenizer.from_pretrained(MODEL_NAME)
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-
-# ── 3  Experiment V1 — linear LR, 3 epochs ───────────────────────────────────
 
 v1_config = {
     "model": MODEL_NAME,  "version": "v1",
@@ -118,12 +94,10 @@ trainer_v1 = WeightedTrainer(
     callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
 )
 
-print("\n── Training V1 ──────────────────────────────────────────────────────────")
+print("\n-- Training V1 ----------------------------------------------------------")
 trainer_v1.train()
 wandb.finish()
 
-
-# ── 4  Experiment V2 — cosine LR + warmup, 5 epochs ──────────────────────────
 
 v2_config = {
     "model": MODEL_NAME,  "version": "v2",
@@ -162,14 +136,12 @@ trainer_v2 = WeightedTrainer(
     callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
 )
 
-print("\n── Training V2 ──────────────────────────────────────────────────────────")
+print("\n-- Training V2 ----------------------------------------------------------")
 trainer_v2.train()
 wandb.finish()
 
 
-# ── 5  Evaluation & comparison ────────────────────────────────────────────────
-
-print("\n── Test-set evaluation ──────────────────────────────────────────────────")
+print("\n-- Test-set evaluation ---------------------------------------------------")
 trainers = {"V1": trainer_v1, "V2": trainer_v2}
 results  = {}
 
@@ -186,22 +158,19 @@ for name, trainer in trainers.items():
 best_name    = max(results, key=lambda k: results[k]["eval_f1_weighted"])
 best_trainer = trainers[best_name]
 print(
-    f"\n✅ Best model: {best_name}  "
+    f"\nBest model: {best_name}  "
     f"(weighted F1 = {results[best_name]['eval_f1_weighted']:.4f})"
 )
 
-# Detailed per-class report
 preds_out = best_trainer.predict(tokenized["test"])
 y_true    = preds_out.label_ids
 y_pred    = np.argmax(preds_out.predictions, axis=-1)
-print(f"\nClassification report — {best_name}\n")
+print(f"\nClassification report -- {best_name}\n")
 print(classification_report(y_true, y_pred,
                              target_names=["CLEAN", "VULNERABLE"], digits=4))
 
 
-# ── 6  Push best model to Hugging Face Hub ────────────────────────────────────
-
-print(f"\nPushing {best_name} → {HF_REPO_ID}")
+print(f"\nPushing {best_name} -> {HF_REPO_ID}")
 best_trainer.push_to_hub(
     repo_id=HF_REPO_ID,
     commit_message=f"CodeBERTa fine-tuned on CodeXGLUE defect detection ({best_name})",
@@ -216,11 +185,8 @@ wandb.finish()
 print(f"Model live at: {model_url}")
 
 
-# ── 7  Optional: QLoRA with CodeBERT-base ────────────────────────────────────
-# Set USE_QLORA = True at the top of this file and re-run to activate.
-
 if not USE_QLORA:
-    print("\nUSE_QLORA is False — skipping QLoRA section.")
+    print("\nUSE_QLORA is False -- skipping QLoRA section.")
 else:
     from datasets import load_from_disk as _load
     from transformers import BitsAndBytesConfig
@@ -247,7 +213,6 @@ else:
 
     tokenizer_qlora = AutoTokenizer.from_pretrained(LARGE_MODEL)
 
-    # Re-tokenise with CodeBERT tokenizer
     from datasets import load_dataset as _ld
     from utils import clean_code, make_dedup_tagger, DATASET_NAME
 

@@ -1,22 +1,3 @@
-#!/usr/bin/env python3
-"""
-inference.py — Classify C/C++ code snippets as CLEAN or VULNERABLE using
-the fine-tuned model hosted on the Hugging Face Hub.
-
-Usage examples:
-    # Run the built-in demo suite
-    python inference.py
-
-    # Classify a single snippet passed on the command line
-    python inference.py --snippet "char buf[10]; gets(buf);"
-
-    # Read a snippet from a file
-    python inference.py --file path/to/snippet.c
-
-    # Use a local model directory instead of the Hub
-    python inference.py --model ./outputs/v2
-"""
-
 import argparse
 import os
 import sys
@@ -28,10 +9,7 @@ from transformers import pipeline
 from utils import HF_REPO_ID, MAX_LENGTH
 
 
-# ── Built-in demo snippets ────────────────────────────────────────────────────
-
 DEMO_SNIPPETS = [
-    # (code, expected_label)
     ("char buf[10]; gets(buf);",                                "VULNERABLE"),
     ("printf(user_input);",                                     "VULNERABLE"),
     ("memcpy(dst, src, strlen(src));",                          "VULNERABLE"),
@@ -42,10 +20,7 @@ DEMO_SNIPPETS = [
 ]
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
 def build_classifier(model_path: str):
-    """Load the text-classification pipeline from the Hub or a local path."""
     if os.environ.get("HF_TOKEN"):
         login(token=os.environ["HF_TOKEN"])
     return pipeline(
@@ -67,36 +42,20 @@ def run_demo(clf) -> None:
     for snippet, expected in DEMO_SNIPPETS:
         out    = classify(clf, snippet)
         ok     = out["label"] == expected
-        status = "✅ OK  " if ok else "❌ FAIL"
+        status = "OK  " if ok else "FAIL"
         passed += int(ok)
-        print(f"{status}  {out['label']:12}  {out['confidence']:.4f}  {snippet[:55]}")
+        print(f"{status:6}  {out['label']:12}  {out['confidence']:.4f}  {snippet[:55]}")
     print(f"\n{passed}/{len(DEMO_SNIPPETS)} demo snippets classified correctly.")
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
-
 def parse_args():
-    p = argparse.ArgumentParser(
-        description="CodeBERTa vulnerability classifier",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    p.add_argument(
-        "--model", default=HF_REPO_ID,
-        help=f"HF repo ID or local path (default: {HF_REPO_ID})",
-    )
+    p = argparse.ArgumentParser(description="CodeBERTa vulnerability classifier")
+    p.add_argument("--model", default=HF_REPO_ID, help=f"HF repo ID or local path (default: {HF_REPO_ID})")
     group = p.add_mutually_exclusive_group()
-    group.add_argument(
-        "--snippet", type=str, default=None,
-        help="Inline C/C++ code snippet to classify",
-    )
-    group.add_argument(
-        "--file", type=str, default=None,
-        help="Path to a .c / .cpp file to classify",
-    )
+    group.add_argument("--snippet", type=str, default=None, help="Inline C/C++ code snippet to classify")
+    group.add_argument("--file", type=str, default=None, help="Path to a .c / .cpp file to classify")
     return p.parse_args()
 
-
-# ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
     args = parse_args()
