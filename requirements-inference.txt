@@ -1,0 +1,19 @@
+# Minimal dependency set for the inference image (inference.py only).
+# Drops datasets / accelerate / scikit-learn / wandb, which are needed only
+# by data_prep.py and train.py — cutting hundreds of MB from the image.
+#
+# To use: in the Dockerfile, replace
+#     COPY requirements.txt .
+#     RUN pip install --no-cache-dir -r requirements.txt
+# with
+#     COPY requirements-inference.txt .
+#     RUN pip install --no-cache-dir -r requirements-inference.txt
+
+# CPU-only PyTorch wheels (smaller, no CUDA payload).
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+torch>=2.2,<3
+transformers>=4.46,<5
+huggingface-hub>=0.24
+numpy>=1.26,<2
+
