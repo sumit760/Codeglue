@@ -6,12 +6,12 @@ Classify C/C++ code snippets as CLEAN or VULNERABLE using a fine-tuned CodeBERTa
 
 ## Project Structure
 
-| File | Description |
-|------|-------------|
-| prepare_data.py | Downloads and preprocesses the CodeXGLUE dataset -- cleans whitespace, deduplicates samples, tokenizes with CodeBERTa, computes class weights |
-| train.py | Trains two experimental configurations (V1 and V2), picks the best by weighted F1, pushes to Hugging Face Hub. Optional QLoRA path included |
-| inference.py | Loads the fine-tuned model and classifies code snippets via demo, CLI --snippet, or --file modes |
-| utils.py | Shared toolkit -- config constants, auth helpers, metrics computation, weighted loss Trainer |
+| # | File | Description |
+|---|------|-------------|
+| 1 | prepare_data.py | Downloads and preprocesses the CodeXGLUE dataset -- cleans whitespace, deduplicates samples, tokenizes with CodeBERTa, computes class weights |
+| 2 | train.py | Trains two experimental configurations (V1 and V2), picks the best by weighted F1, pushes to Hugging Face Hub. Optional QLoRA path included |
+| 3 | inference.py | Loads the fine-tuned model and classifies code snippets via demo, CLI --snippet, or --file modes |
+| 4 | utils.py | Shared toolkit -- config constants, auth helpers, metrics computation, weighted loss Trainer |
 
 ---
 
