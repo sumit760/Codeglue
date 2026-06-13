@@ -40,11 +40,11 @@ from data_prep import (
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-HF_REPO_ID    = os.environ.get("HF_REPO_ID", "sumitp76/codeberta-vuln-detector")
-HF_TOKEN      = os.environ.get("HF_TOKEN") or None
+HF_REPO_ID = os.environ.get("HF_REPO_ID", "sumitp76/codeberta-vuln-detector")
+HF_TOKEN = os.environ.get("HF_TOKEN") or None
 WANDB_PROJECT = os.environ.get("WANDB_PROJECT", "mlops-a3-vuln-detection")
 WANDB_ENABLED = bool(os.environ.get("WANDB_API_KEY"))
-REPORT_TO     = "wandb" if WANDB_ENABLED else "none"
+REPORT_TO = "wandb" if WANDB_ENABLED else "none"
 
 V1_CONFIG = {
     "version": "v1", "learning_rate": 2e-5, "epochs": 3, "batch_size": 16,

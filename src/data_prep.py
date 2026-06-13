@@ -26,15 +26,15 @@ from sklearn.utils.class_weight import compute_class_weight
 # --------------------------------------------------------------------------- #
 # Configuration (environment-overridable)
 # --------------------------------------------------------------------------- #
-SEED          = int(os.environ.get("SEED", "42"))
+SEED = int(os.environ.get("SEED", "42"))
 PRIMARY_MODEL = os.environ.get("PRIMARY_MODEL", "huggingface/CodeBERTa-small-v1")
-LARGE_MODEL   = os.environ.get("LARGE_MODEL", "microsoft/codebert-base")
-USE_QLORA     = os.environ.get("USE_QLORA", "false").lower() == "true"
-MODEL_NAME    = LARGE_MODEL if USE_QLORA else PRIMARY_MODEL
-DATASET_NAME  = os.environ.get("DATASET_NAME", "google/code_x_glue_cc_defect_detection")
-MAX_LENGTH    = int(os.environ.get("MAX_LENGTH", "512"))
-OUTPUT_DIR    = os.environ.get("OUTPUT_DIR", "./outputs")
-DATA_DIR      = os.environ.get("DATA_DIR", "./data")
+LARGE_MODEL = os.environ.get("LARGE_MODEL", "microsoft/codebert-base")
+USE_QLORA = os.environ.get("USE_QLORA", "false").lower() == "true"
+MODEL_NAME = LARGE_MODEL if USE_QLORA else PRIMARY_MODEL
+DATASET_NAME = os.environ.get("DATASET_NAME", "google/code_x_glue_cc_defect_detection")
+MAX_LENGTH = int(os.environ.get("MAX_LENGTH", "512"))
+OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "./outputs")
+DATA_DIR = os.environ.get("DATA_DIR", "./data")
 
 # Label mapping is the single source of truth for the whole pipeline.
 ID2LABEL = {0: "CLEAN", 1: "VULNERABLE"}
@@ -148,7 +148,7 @@ def prepare():
 
 
 # --------------------------------------------------------------------------- #
-# Standalone EDA (mirrors the notebook's data section)
+# Standalone EDA
 # --------------------------------------------------------------------------- #
 def _print_eda():
     set_seed(SEED)

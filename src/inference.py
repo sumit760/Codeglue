@@ -36,7 +36,7 @@ HF_MODEL_NAME = (
     or os.environ.get("HF_REPO_ID")
     or "sumitp76/codeberta-vuln-detector"
 )
-HF_TOKEN   = os.environ.get("HF_TOKEN") or None
+HF_TOKEN = os.environ.get("HF_TOKEN") or None
 INPUT_TEXT = os.environ.get("INPUT_TEXT")
 MAX_LENGTH = int(os.environ.get("MAX_LENGTH", "512"))
 
