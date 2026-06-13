@@ -5,17 +5,17 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # 3. Copy only the requirements first to leverage Docker layer caching
-COPY requirements.txt .
+COPY requirements-inference.txt .
 
 # 4. Install dependencies while clearing the pip cache to save space
 # Note: We pull the CPU-only version of PyTorch to drastically reduce image size
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-inference.txt
 
 # 5. Copy the rest of the application code into the container
 COPY src/ .
 
 # 6. Set default model name
-ARG HF_MODEL_NAME=pranshur10/codeberta-vuln-detector
+ARG HF_MODEL_NAME=sumitp76/codeberta-vuln-detector
 
 # 7. Set model name as the environment variable
 ENV HF_MODEL_NAME=${HF_MODEL_NAME}
