@@ -9,29 +9,45 @@ on:
         required: true
 
 env:
-  # Docker Hub image to pull. Replace with your own:
-  #   <your-dockerhub-username>/mlops-a3-inference:latest
-  # (Docker Hub is the default registry, so no docker.io/ prefix is required.)
+  # The image you signed in CI. Use the tag that points at the signed build
+  # (e.g. the commit SHA tag). Replace with your Docker Hub repo.
   IMAGE: sumitiitj26/mlops-a3-inference:dev-latest
 
 jobs:
   infer:
+    name: Infer vulnerability of the codeline
     runs-on: ubuntu-latest
+    
     steps:
-      # Uncomment ONLY if the image is PRIVATE on Docker Hub.
-      # Requires DOCKERHUB_USERNAME and DOCKERHUB_TOKEN repo secrets.
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      # Uncomment ONLY if the image (and thus its signature) is PRIVATE on Docker Hub.
       # - name: Log in to Docker Hub
       #   env:
       #     DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       #     DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       #   run: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-      - name: Pull image from Docker Hub
-        run: docker pull "$IMAGE"
+      # Pull, then resolve to an immutable digest so verify and run use the SAME image.
+      - name: Pull image and resolve digest
+        run: |
+          docker pull "$IMAGE"
+          DIGEST="$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE")"
+          echo "DIGEST=$DIGEST" >> "$GITHUB_ENV"
+          echo "Resolved $IMAGE -> $DIGEST"
 
-      # HF_TOKEN and INPUT_TEXT are set as step env vars and forwarded with
-      # `-e NAME` (value-less pass-through), so nothing user-controlled is
-      # interpolated into the command line.
+      # Keyless verification. Fails the job (non-zero exit) if the signature,
+      # identity, or issuer don't match — so inference never runs on an
+      # unverified image.
+      - name: Verify signature (keyless / GitHub OIDC)
+        run: |
+          cosign verify \
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/\.github/workflows/.+" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$DIGEST"
+
+      # Only reached if verification succeeded. Run the exact verified digest.
       - name: Run inference
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -40,4 +56,4 @@ jobs:
           docker run --rm \
             -e HF_TOKEN \
             -e INPUT_TEXT \
-            "$IMAGE"
+            "$DIGEST"
