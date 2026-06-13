@@ -1,5 +1,6 @@
 # .github/workflows/inference.yml
 name: Inference
+
 on:
   workflow_dispatch:
     inputs:
@@ -7,15 +8,36 @@ on:
         description: 'Text to classify'
         required: true
 
+env:
+  # Docker Hub image to pull. Replace with your own:
+  #   <your-dockerhub-username>/mlops-a3-inference:latest
+  # (Docker Hub is the default registry, so no docker.io/ prefix is required.)
+  IMAGE: your-dockerhub-username/mlops-a3-inference:latest
+
 jobs:
   infer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - run: pip install -r requirements.txt
-      - env:
+      # Uncomment ONLY if the image is PRIVATE on Docker Hub.
+      # Requires DOCKERHUB_USERNAME and DOCKERHUB_TOKEN repo secrets.
+      # - name: Log in to Docker Hub
+      #   env:
+      #     DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      #   run: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+      - name: Pull image from Docker Hub
+        run: docker pull "$IMAGE"
+
+      # HF_TOKEN and INPUT_TEXT are set as step env vars and forwarded with
+      # `-e NAME` (value-less pass-through), so nothing user-controlled is
+      # interpolated into the command line.
+      - name: Run inference
+        env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           INPUT_TEXT: ${{ github.event.inputs.input_text }}
-        run: python src/inference.py
+        run: |
+          docker run --rm \
+            -e HF_TOKEN \
+            -e INPUT_TEXT \
+            "$IMAGE"
